@@ -81,7 +81,7 @@ module Jekyll
         end
 
         def path
-          File.join("_#{@collection}", file_name)
+          ["_#{@collection}", params.lang , file_name].compact.join("/")
         end
 
         def file_name

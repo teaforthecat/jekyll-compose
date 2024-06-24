@@ -24,8 +24,31 @@ module Jekyll
         options["layout"] || Jekyll::Compose::DEFAULT_LAYOUT
       end
 
+      def lang
+        options["lang"] || parse_args["lang"] || raise_parse_error
+      end
+
+      def raise_parse_error
+        puts "todo"
+      end
+
+      # extract values from a string
+      def parse_args
+        return {} unless path_template_regexp
+
+        path_template_regexp.match(args.first).named_captures
+      end
+
+      # turns "{lang}/{name}" into a regexp that can extract values from a string
+      # sort of like reverse interpolation
+      def path_template_regexp
+        return nil unless config["path_template"]
+
+        Regexp.new config["path_template"].gsub('{', '(?<').gsub('}', '>[^\/ ]+)')
+      end
+
       def title
-        args.join " "
+        parse_args()["name"] || args.join(" ")
       end
 
       def force?

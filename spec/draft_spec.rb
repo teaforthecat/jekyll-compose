@@ -162,6 +162,22 @@ RSpec.describe(Jekyll::Commands::Draft) do
         expect(output).to include("New draft created at #{generated_path}")
       end
     end
+
+    context "with i18n" do
+      let(:args) { ["es/a-test-post"] }
+      let(:config_data) do
+        %(
+      source: site
+      path_template: "{lang}/{name}"
+      )
+      end
+
+      it "should set the lang on the frontmatter" do
+        output = capture_stdout { described_class.process(args) }
+        generated_path = File.join("site", "_drafts", "es", "a-test-post.md").cyan
+        expect(output).to include("New draft created at #{generated_path}")
+      end
+    end
   end
 
   context "when source option is set" do

@@ -557,6 +557,34 @@ RSpec.describe(Jekyll::Commands::ComposeCommand) do
           expect(output).to include("New file created at #{generated_path}")
         end
       end
+
+      context "with i18n" do
+        let(:args) { ["es/another-test-post"] }
+        let(:config_data) do
+          %(
+        source: site
+        path_template: "{lang}/{name}"
+        )
+        end
+
+        # note: not sure why this setup is needed, but it prevents an "already
+        # exists" error
+        before(:each) do
+          FileUtils.mkdir_p posts_dir unless File.directory? posts_dir
+          allow(Jekyll::Compose::FileEditor).to receive(:system)
+        end
+
+        after(:each) do
+          FileUtils.rm_r posts_dir if File.directory? posts_dir
+        end
+
+
+        it "should set the lang on the frontmatter" do
+          output = capture_stdout { described_class.process(args) }
+          generated_path = File.join("site", "_posts", "es", "#{datestamp}-another-test-post.md").cyan
+          expect(output).to include("New post created at #{generated_path}")
+        end
+      end
     end
 
     context "when source option is set" do

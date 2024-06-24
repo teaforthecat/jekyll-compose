@@ -43,7 +43,7 @@ module Jekyll
         end
 
         def path
-          "_drafts/#{file_name}"
+          ["_drafts", params.lang , "#{file_name}"].compact.join("/")
         end
 
         def content(custom_front_matter = {})
