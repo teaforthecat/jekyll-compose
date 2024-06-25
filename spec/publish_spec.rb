@@ -141,7 +141,7 @@ RSpec.describe(Jekyll::Commands::Publish) do
     end
 
     after(:each) do
-      FileUtils.rm(config)
+      FileUtils.rm(config) if File.exist?(config)
     end
 
     it "should use source directory set by config" do
@@ -150,6 +150,55 @@ RSpec.describe(Jekyll::Commands::Publish) do
       capture_stdout { described_class.process(args) }
       expect(post_path).to exist
       expect(draft_path).not_to exist
+    end
+
+
+    context "with i18n" do
+
+      let(:drafts_dir) { Pathname.new source_dir("_drafts") }
+      let(:draft_path) { drafts_dir.join( "es",  draft_to_publish) }
+      let(:config_data) do
+        %(
+      source: site
+      path_template: "{lang}/{name}"
+      )
+      end
+    before(:each) do
+      FileUtils.mkdir_p drafts_dir unless File.directory? drafts_dir
+      FileUtils.mkdir_p drafts_dir.join('es') unless File.directory? drafts_dir.join('es')
+      FileUtils.mkdir_p posts_dir unless File.directory? posts_dir
+      File.write(draft_path, "---\nlayout: post\n---\n")
+    end
+
+    after(:each) do
+      FileUtils.rm_r drafts_dir if File.directory? drafts_dir
+      FileUtils.rm_r drafts_dir.join('es') if File.directory? drafts_dir.join('es')
+      FileUtils.rm_r posts_dir if File.directory? posts_dir
+      FileUtils.rm_r draft_path if File.file? draft_path
+      FileUtils.rm_r post_path if File.file? post_path
+    end
+
+
+
+      before(:each) do
+        debugger
+        File.open(config, "w") do |f|
+          f.write(config_data)
+        end
+      end
+
+      after(:each) do
+        FileUtils.rm(config) if File.exist?(config)
+      end
+
+      it "should publish to subdir under posts" do
+        expect(draft_path).to eql("_drafts/es/xyz")
+        expect(post_path).not_to exist
+        expect(draft_path).to exist
+        capture_stdout { described_class.process(args, "source" => "site") }
+        expect(post_path).to exist
+        expect(draft_path).not_to exist
+      end
     end
   end
 
